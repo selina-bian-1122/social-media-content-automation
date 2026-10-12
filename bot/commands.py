@@ -30,6 +30,15 @@ HELP_TEXT = """我能做这些（直接发文字即可）：
 · 「批准 R2」/「取消 R2」→ 处理审批
 · 「帮助」→ 显示本说明"""
 
+# 问“怎么用”的各种说法（包含即匹配，英文已转小写）
+_HELP_KEYWORDS = (
+    "帮助", "帮忙", "说明", "怎么用", "如何使用", "用法", "使用方法", "指令", "命令", "菜单", "功能",
+    "能做什么", "会做什么", "可以做什么", "能干什么", "会什么",
+    "help", "what can you do", "how to use", "commands", "menu",
+)
+# 单独 @bot 打招呼时也回复用法（整句完全匹配，避免误伤）
+_GREETINGS = {"", "hi", "hello", "hey", "你好", "您好", "在吗", "在不在", "test", "testing", "测试", "?", "？"}
+
 # 关键词 → 需审批的操作；按顺序匹配，先匹配到的生效
 _OP_KEYWORDS = [
     (("跑一遍", "全部流程", "完整", "run"), "run_all"),
@@ -108,7 +117,7 @@ def handle_text(chat_id: str, text: str, addressed: bool = True) -> None:
         _add_materials(chat_id, urls, _URL_RE.sub("", text).strip())
         return
 
-    if any(k in lower for k in ("帮助", "help", "你能做什么")):
+    if any(k in lower for k in _HELP_KEYWORDS) or (addressed and lower in _GREETINGS):
         lark_client.send_text(chat_id, HELP_TEXT)
         return
 
