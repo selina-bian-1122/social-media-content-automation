@@ -11,7 +11,10 @@
       "mcp__lark-mcp__im_v1_chat_list",
       "mcp__lark-mcp__im_v1_chatMembers_get",
       "mcp__lark-mcp__im_v1_message_list",
-      "mcp__lark-mcp__contact_v3_user_batchGetId"
+      "mcp__lark-mcp__contact_v3_user_batchGetId",
+      "WebSearch",
+      "Bash(git fetch *)",
+      "mcp__terminal__read_terminal"
     ]
   }
 }
