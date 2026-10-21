@@ -3,6 +3,7 @@
 import logging
 from concurrent.futures import ThreadPoolExecutor
 
+import config
 import notifier
 from automations import content_generator, material_processor, rss_fetcher
 from bot import cards
@@ -42,7 +43,8 @@ def _run(op: str, chat_id: str, topic_ids: list[str] | None = None) -> str:
         return f"✅ RSS 抓取完成，新增 {n} 条素材。发送「加工」可继续处理。"
 
     if op == "process_materials":
-        n = material_processor.run()
+        # bot 里限量处理（人工提报优先），避免一次把积压的 RSS 素材全过一遍 AI、让群里久等
+        n = material_processor.run(limit=config.BOT_PROCESS_LIMIT)
         pushed = notifier.push_pending_topics(chat_id)
         return f"✅ 素材加工完成：处理 {n} 条，推送 {pushed} 个新选题待筛选。"
 
@@ -52,7 +54,7 @@ def _run(op: str, chat_id: str, topic_ids: list[str] | None = None) -> str:
 
     if op == "run_all":
         rss = rss_fetcher.run()
-        mat = material_processor.run()
+        mat = material_processor.run(limit=config.BOT_PROCESS_LIMIT)
         gen = content_generator.run()
         pushed = notifier.push_pending_topics(chat_id)
         return (f"✅ 完整流水线完成\n"

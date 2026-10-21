@@ -45,6 +45,8 @@ BOT_MODE = os.getenv("BOT_MODE", "poll").strip().lower()
 # poll 模式下要监听的会话 chat_id（逗号分隔），默认监听 LARK_BOT_CHAT_ID
 BOT_POLL_CHAT_IDS = _csv_env("BOT_POLL_CHAT_IDS") or ({LARK_BOT_CHAT_ID} if LARK_BOT_CHAT_ID else set())
 BOT_POLL_INTERVAL = int(os.getenv("BOT_POLL_INTERVAL", "5"))
+# bot 里「加工」「跑一遍」每次最多加工几条素材（人工提报优先）；0 表示不限
+BOT_PROCESS_LIMIT = int(os.getenv("BOT_PROCESS_LIMIT", "3")) or None
 
 # 多维表格网页地址（可选），用于在消息中附带跳转链接，例如 https://xxx.larksuite.com/base/<app_token>
 LARK_BASE_URL = os.getenv("LARK_BASE_URL", "").rstrip("/")
