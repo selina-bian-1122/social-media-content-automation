@@ -45,6 +45,10 @@ BOT_MODE = os.getenv("BOT_MODE", "poll").strip().lower()
 # poll 模式下要监听的会话 chat_id（逗号分隔），默认监听 LARK_BOT_CHAT_ID
 BOT_POLL_CHAT_IDS = _csv_env("BOT_POLL_CHAT_IDS") or ({LARK_BOT_CHAT_ID} if LARK_BOT_CHAT_ID else set())
 BOT_POLL_INTERVAL = int(os.getenv("BOT_POLL_INTERVAL", "5"))
+# 素材进表后超过 N 天仍「待处理」视为过期，加工时自动标记「已跳过」；0 = 不检查
+MATERIAL_MAX_AGE_DAYS = float(os.getenv("MATERIAL_MAX_AGE_DAYS", "3"))
+# 推送到群里的选题只取最近 N 天创建的（「选题」指令、加工后的自动推送）；0 = 不过滤
+TOPIC_MAX_AGE_DAYS = float(os.getenv("TOPIC_MAX_AGE_DAYS", "3"))
 # bot 里「加工」「跑一遍」每次最多加工几条素材（人工提报优先）；0 表示不限
 BOT_PROCESS_LIMIT = int(os.getenv("BOT_PROCESS_LIMIT", "3")) or None
 

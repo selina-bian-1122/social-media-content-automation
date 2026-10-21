@@ -84,6 +84,9 @@ cp .env.example .env
 | `ANTHROPIC_BASE_URL` / `OPENAI_BASE_URL` | 使用第三方中转服务时填接口地址（OpenAI 格式通常需以 `/v1` 结尾）；留空直连官方 |
 | `AI_MODEL` | 模型名，如 `claude-sonnet-4-6` |
 | `RSS_MAX_PER_FEED` / `RSS_MAX_AGE_DAYS` | 每个 RSS 源只看最新 N 条 / 只收 N 天内文章（默认 5 / 3） |
+| `MATERIAL_MAX_AGE_DAYS` | 素材进表超过 N 天仍「待处理」视为过期，加工时自动标「已跳过」，不交给 AI（默认 3，0 = 不检查） |
+| `TOPIC_MAX_AGE_DAYS` | bot 只推送最近 N 天创建的待筛选选题（默认 3，0 = 不过滤） |
+| `BOT_PROCESS_LIMIT` | bot 里「加工」「跑一遍」每次最多加工几条素材，人工提报优先（默认 3，0 = 不限） |
 | `AUTO_PUBLISH` | 自动发布到 X，默认 `false`；开启前需先实现 `automations/publisher.py`（见「自动发布」） |
 | `LARK_BOT_CHAT_ID`、`BOT_*` | 飞书 bot 相关，可选，见下文「飞书 Bot」 |
 

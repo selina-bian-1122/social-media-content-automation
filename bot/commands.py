@@ -128,7 +128,7 @@ def handle_text(chat_id: str, text: str, addressed: bool = True) -> None:
     if "选题" in text:
         n = notifier.push_pending_topics(chat_id, only_new=False)
         if n == 0:
-            lark_client.send_text(chat_id, "当前没有待筛选的选题。")
+            lark_client.send_text(chat_id, "最近没有新的待筛选选题（更早的选题请到选题库查看）。")
         return
 
     for keywords, op in _OP_KEYWORDS:

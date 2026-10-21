@@ -3,6 +3,7 @@
 import json
 import logging
 import threading
+import time
 
 import config
 import lark_client
@@ -29,6 +30,14 @@ def _save_pushed(ids: set[str]) -> None:
     _PUSHED_FILE.write_text(json.dumps(sorted(ids)), encoding="utf-8")
 
 
+def _recent(topics: list[dict]) -> list[dict]:
+    """只保留最近 TOPIC_MAX_AGE_DAYS 天内创建的选题，避免把积压的旧选题推到群里；0 = 不过滤。"""
+    if not config.TOPIC_MAX_AGE_DAYS:
+        return topics
+    cutoff_ms = (time.time() - config.TOPIC_MAX_AGE_DAYS * 86400) * 1000
+    return [t for t in topics if int(t["fields"].get("创建时间") or 0) >= cutoff_ms]
+
+
 def push_pending_topics(chat_id: str | None = None, limit: int = 10,
                         only_new: bool = True) -> int:
     """推送“待筛选”选题卡片。only_new=True 时跳过已推送过的，返回本次推送数量。"""
@@ -44,6 +53,9 @@ def push_pending_topics(chat_id: str | None = None, limit: int = 10,
         pushed = _load_pushed()
         if only_new:
             topics = [t for t in topics if t["record_id"] not in pushed]
+        topics = _recent(topics)
+        # 新的在前：限量推送时先推最新的选题
+        topics.sort(key=lambda t: -int(t["fields"].get("创建时间") or 0))
         if not topics:
             return 0
 

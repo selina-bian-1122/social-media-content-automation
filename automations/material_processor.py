@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 
 import config
 import lark_client
@@ -21,6 +22,7 @@ def run(limit: int | None = None, only_manual: bool = False) -> int:
         if (m["fields"].get("处理状态") in (None, "", "待处理"))
         and (m["fields"].get("原文链接") or m["fields"].get("素材描述"))
     ]
+    materials = _skip_stale(materials)
     if only_manual:
         materials = [m for m in materials if (m["fields"].get("来源") or "人工提报") == "人工提报"]
     materials.sort(key=lambda m: (
@@ -163,6 +165,33 @@ def _titled_description(description: str, title: str) -> dict:
     if description.strip() in _PLACEHOLDER_DESCRIPTIONS:
         return {"素材描述": title}
     return {"素材描述": f"{title}\n{description}"}
+
+
+def _skip_stale(materials: list[dict]) -> list[dict]:
+    """提交后超过 MATERIAL_MAX_AGE_DAYS 天仍未处理的素材视为过期：标记「已跳过」，不再交给 AI。
+
+    按「提交时间」（进表时间）判断，所以新提报的旧文章不受影响；0 = 不检查。
+    """
+    if not config.MATERIAL_MAX_AGE_DAYS:
+        return materials
+    cutoff_ms = (time.time() - config.MATERIAL_MAX_AGE_DAYS * 86400) * 1000
+    fresh = []
+    for m in materials:
+        submitted = int(m["fields"].get("提交时间") or 0)
+        if submitted and submitted < cutoff_ms:
+            try:
+                lark_client.update_record(config.TABLE_IDS["materials"], m["record_id"], {
+                    "处理状态": "已跳过",
+                    "跳过原因": f"素材过期：提交超过 {config.MATERIAL_MAX_AGE_DAYS:g} 天未处理，自动跳过",
+                })
+            except Exception as e:
+                logger.error("标记过期素材失败 %s: %s", m["record_id"], e)
+                continue  # 标记失败也不交给 AI
+        else:
+            fresh.append(m)
+    if len(fresh) < len(materials):
+        logger.info("已自动跳过 %d 条过期素材（超过 %g 天）", len(materials) - len(fresh), config.MATERIAL_MAX_AGE_DAYS)
+    return fresh
 
 
 def _plain(value) -> str:
